@@ -8016,6 +8016,7 @@ OO.ui.DropdownWidget = function OoUiDropdownWidget( config ) {
 	this.$handle
 		.addClass( 'oo-ui-dropdownWidget-handle' )
 		.attr( {
+			type: 'button',
 			'aria-owns': this.menu.getElementId(),
 			'aria-haspopup': 'listbox'
 		} )
