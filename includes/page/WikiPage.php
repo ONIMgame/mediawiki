@@ -2667,6 +2667,23 @@ class WikiPage implements Page, IDBAccessObject {
 		// row and CAS check on page_latest to see if the trx snapshot matches.
 		$lockedLatest = $this->lockAndGetLatest();
 		if ( $id == 0 || $this->getLatest() != $lockedLatest ) {
+			// Temporary logging for debugging T210739. If that bug is closed,
+			// this should be removed.
+			$row1 = $dbw->selectRow(
+				'revision', '*', [ 'rev_id' => $this->getLatest() ], __METHOD__, [ 'LOCK IN SHARE MODE' ]
+			);
+			$row2 = $dbw->selectRow(
+				'revision', '*', [ 'rev_id' => $lockedLatest ], __METHOD__, [ 'LOCK IN SHARE MODE' ]
+			);
+			wfDebugLog( 'AdHocDebug', 'T210739: Cannot delete {title}', 'all', [
+				'title' => $this->getTitle()->getPrefixedText(),
+				'id' => $id,
+				'getLatest' => $this->getLatest(),
+				'lockedLatest' => $lockedLatest,
+				'getLatest_row' => $row1,
+				'lockedLatest_row' => $row2,
+			] );
+
 			$dbw->endAtomic( __METHOD__ );
 			// Page not there or trx snapshot is stale
 			$status->error( 'cannotdelete',
